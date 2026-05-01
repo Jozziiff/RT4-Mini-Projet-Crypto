@@ -197,20 +197,6 @@ x = x + 1  # incrémenter x
 
 ---
 
-## Répartition des tâches (pour référence)
-
-| Membre   | Fichiers                                      |
-|----------|-----------------------------------------------|
-| Youssef  | `crypto_service.py`, `url_service.py`         |
-| Membre 2 | `file_service.py`, `routes/upload.py`         |
-| Membre 3 | `routes/download.py`, `config.py`, `app.py`   |
-| Membre 4 | `templates/`, `static/`                       |
-
-Chaque membre doit respecter ces instructions indépendamment de sa partie.
-Le code de chacun sera intégré dans la même base — la cohérence est collective.
-
----
-
 ## Checklist avant chaque commit
 
 - [ ] Le fichier a un docstring de module complet
