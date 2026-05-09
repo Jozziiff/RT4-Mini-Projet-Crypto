@@ -33,6 +33,7 @@ Ce projet illustre, de manière pédagogique, comment les primitives cryptograph
 | Fonctionnalité | Description |
 |---|---|
 | **Upload de fichier** | Dépôt de fichiers via un formulaire web simple |
+| **Validation serveur** | Nettoyage du nom, extensions autorisées, rejet des doublons |
 | **Génération d'URL signée** | URL contenant le nom, l'expiration et la signature HMAC |
 | **Vérification cryptographique** | Rejet automatique de toute URL modifiée ou expirée |
 | **Téléchargement sécurisé** | Accès accordé uniquement si la signature est valide |
@@ -42,9 +43,9 @@ Ce projet illustre, de manière pédagogique, comment les primitives cryptograph
 ## Architecture du projet
 
 ```
-securesharee/
+SecureShare/
 │
-├── app.py                  # Point d'entrée — initialisation et lancement Flask
+├── app.py                  # Point d'entrée — initialisation Flask + création de /storage
 ├── config.py               # Clé secrète et durée d'expiration
 │
 ├── routes/
@@ -52,9 +53,9 @@ securesharee/
 │   └── download.py         # GET /download — vérification et envoi du fichier
 │
 ├── services/
-│   ├── crypto.py           # Génération et vérification de la signature HMAC
-│   ├── file_service.py     # Opérations de lecture/écriture sur les fichiers
-│   └── url_service.py      # Construction de l'URL signée
+│   ├── crypto_service.py   # Génération et vérification de la signature HMAC
+│   ├── file_service.py     # Nettoyage du nom + écriture dans /storage
+│   └── url_service.py      # Construction et parsing des URLs signées
 │
 ├── templates/
 │   ├── index.html          # Formulaire d'upload
@@ -140,13 +141,22 @@ L'application est accessible sur **http://localhost:5000**
 
 ## Utilisation
 
-```
 1. Ouvrir http://localhost:5000
-2. Uploader un fichier via le formulaire
-3. Copier l'URL signée générée
-4. Coller l'URL dans le navigateur → le fichier se télécharge
-5. Attendre l'expiration de l'URL, puis réessayer → accès refusé ✗
-```
+2. Sélectionner un fichier (txt, pdf, png, jpg) de 5 MB maximum
+3. Envoyer le fichier via le formulaire
+4. Copier l'URL signée générée ou cliquer sur "Télécharger maintenant"
+5. Après expiration, la même URL est refusée
+
+Notes :
+- Si un fichier du même nom existe déjà, l'upload est refusé
+- Le nom est nettoyé côté serveur pour éviter les chemins dangereux
+
+## Endpoints HTTP
+
+- `GET /` : interface web d'upload
+- `POST /upload` : réception du fichier, génération de l'URL signée
+- `GET /download` : téléchargement sécurisé via paramètres `filename`, `expires`, `signature`
+- `GET /generate-link/<filename>` : génère une URL signée pour un fichier déjà stocké
 
 ---
 
@@ -163,6 +173,11 @@ SECRET_KEY = "votre-cle-secrete"
 EXPIRATION_SECONDS = 300  # 5 minutes
 ```
 
+Le serveur limite aussi la taille des fichiers à 5 MB via `MAX_CONTENT_LENGTH` dans `app.py`.
+
+Si vous déployez ailleurs que sur `http://127.0.0.1:5000`, remplacez l'URL de base
+dans `routes/upload.py` et `app.py` (fonction `build_signed_url`).
+
 > Ne jamais versionner `SECRET_KEY` dans un dépôt public. En production, utiliser une variable d'environnement ou un gestionnaire de secrets.
 
 ---
@@ -175,8 +190,17 @@ EXPIRATION_SECONDS = 300  # 5 minutes
 | `hmac` | Génération et vérification de la signature |
 | `hashlib` | Algorithme SHA-256 (utilisé en interne par `hmac`) |
 | `time` | Horodatage UNIX pour l'expiration |
+| `urllib.parse` | Encodage des paramètres d'URL |
+| `os`, `re` | Gestion des fichiers et nettoyage des noms |
 
 Seul Flask est externe. Toutes les autres dépendances font partie de la bibliothèque standard Python.
+
+---
+
+## Documentation académique
+
+Un guide détaillé et pédagogique expliquant le fonctionnement complet du projet est
+disponible dans `ACADEMIC_OVERVIEW.md`.
 
 ---
 

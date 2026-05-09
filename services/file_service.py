@@ -1,8 +1,15 @@
 import os
-from werkzeug.utils import secure_filename
+import re
 from config import UPLOAD_FOLDER
 
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg'}
+
+
+def secure_filename(filename):
+    filename = os.path.basename(filename)
+    filename = re.sub(r'[^A-Za-z0-9_.-]', '_', filename)
+    filename = filename.strip('._')
+    return filename or 'file'
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
