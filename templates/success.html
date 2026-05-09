@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SecureShare — Lien généré</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/>
+</head>
+<body>
+ 
+  <div class="page">
+ 
+    <header class="site-header">
+      <div class="brand">
+        <span class="brand-icon">⛨</span>
+        <span class="brand-name">SecureShare</span>
+      </div>
+      <p class="brand-sub">Partage de fichiers signé &amp; temporaire</p>
+    </header>
+ 
+    <main class="main">
+ 
+      <!-- Success banner -->
+      <div class="success-banner">
+        <span class="success-banner-icon">✓</span>
+        <div>
+          <div class="success-banner-title">Fichier uploadé avec succès</div>
+          <div class="success-banner-sub">Votre lien sécurisé est prêt à être partagé</div>
+        </div>
+      </div>
+ 
+      <!-- Link card -->
+      <div class="card card--success">
+ 
+        <div class="card-header">
+          <span class="step-badge step-badge--green">02</span>
+          <h2 class="card-title">Votre lien temporaire</h2>
+          <p class="card-desc">Ce lien expire automatiquement — partagez-le rapidement</p>
+        </div>
+ 
+        <!-- Filename -->
+        <div class="meta-row">
+          <span class="meta-label">Fichier</span>
+          <span class="meta-value mono">{{ filename }}</span>
+        </div>
+ 
+        <!-- URL display -->
+        <div class="url-block">
+          <label class="url-label">URL signée</label>
+          <div class="url-box">
+            <input type="text" class="url-input" id="signedUrl" value="{{ signed_url }}" readonly/>
+            <button class="copy-btn" id="copyBtn" type="button" title="Copier l'URL">
+              <span id="copyIcon">⎘</span>
+              <span id="copyText">Copier</span>
+            </button>
+          </div>
+        </div>
+ 
+        <!-- Info grid -->
+        <div class="info-grid">
+          <div class="info-tile">
+            <span class="info-tile-label">Algorithme</span>
+            <span class="info-tile-value">HMAC-SHA256</span>
+          </div>
+          <div class="info-tile">
+            <span class="info-tile-label">Expiration</span>
+            <span class="info-tile-value" id="countdown">5 min 00 s</span>
+          </div>
+          <div class="info-tile">
+            <span class="info-tile-label">Accès</span>
+            <span class="info-tile-value">Lien unique</span>
+          </div>
+          <div class="info-tile">
+            <span class="info-tile-label">Statut</span>
+            <span class="info-tile-value status-active" id="linkStatus">
+              <span class="pulse-dot"></span> Actif
+            </span>
+          </div>
+        </div>
+ 
+        <!-- Actions -->
+        <div class="actions">
+          <a href="{{ signed_url }}" class="btn btn-primary" download>
+            <span class="btn-icon">⬇</span>
+            <span class="btn-label">Télécharger maintenant</span>
+          </a>
+          <a href="/" class="btn btn-ghost">
+            <span class="btn-icon">⬆</span>
+            <span class="btn-label">Envoyer un autre fichier</span>
+          </a>
+        </div>
+ 
+      </div>
+ 
+    </main>
+ 
+    <footer class="site-footer">
+      HMAC-SHA256 &nbsp;·&nbsp; URLs temporaires &nbsp;·&nbsp; Stockage local sécurisé
+    </footer>
+ 
+  </div>
+ 
+  <script>
+    /* ── COPY ── */
+    const copyBtn  = document.getElementById('copyBtn');
+    const copyIcon = document.getElementById('copyIcon');
+    const copyText = document.getElementById('copyText');
+    const urlInput = document.getElementById('signedUrl');
+ 
+    copyBtn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(urlInput.value);
+      } catch {
+        urlInput.select();
+        document.execCommand('copy');
+      }
+      copyIcon.textContent = '✓';
+      copyText.textContent = 'Copié !';
+      copyBtn.classList.add('copy-btn--done');
+      setTimeout(() => {
+        copyIcon.textContent = '⎘';
+        copyText.textContent = 'Copier';
+        copyBtn.classList.remove('copy-btn--done');
+      }, 2500);
+    });
+ 
+    /* ── COUNTDOWN ── Parse expires from URL ── */
+    (function () {
+      const url = urlInput.value;
+      const match = url.match(/[?&]expires=(\d+)/);
+      if (!match) return;
+ 
+      const expiresAt = parseInt(match[1]) * 1000;
+      const countdown = document.getElementById('countdown');
+      const linkStatus = document.getElementById('linkStatus');
+ 
+      function tick() {
+        const diff = Math.max(0, expiresAt - Date.now());
+        const m = Math.floor(diff / 60000);
+        const s = Math.floor((diff % 60000) / 1000);
+        countdown.textContent = m > 0
+          ? `${m} min ${String(s).padStart(2,'0')} s`
+          : diff > 0
+            ? `${s} s`
+            : 'Expiré';
+        if (diff === 0) {
+          clearInterval(timer);
+          linkStatus.innerHTML = '<span style="color:var(--error)">✗ Expiré</span>';
+          linkStatus.className = 'info-tile-value';
+        }
+      }
+      tick();
+      const timer = setInterval(tick, 1000);
+    })();
+  </script>
+ 
+</body>
+</html>

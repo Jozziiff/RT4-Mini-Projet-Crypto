@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, render_template  # ← ajoute render_template
 from routes.upload import upload_bp
 from routes.download import download_bp
 import os
@@ -16,9 +16,8 @@ app.register_blueprint(download_bp)
 
 # route simple pour éviter 404
 @app.route('/')
-
 def home():
-    return "API de partage sécurisé de fichiers"
+    return render_template('index.html')  # ← remplace le string
 
 @app.route("/generate-link/<path:filename>")
 def generate_link(filename):

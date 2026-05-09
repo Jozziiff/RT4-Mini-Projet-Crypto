@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SecureShare — Envoyer un fichier</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/>
+</head>
+<body>
+ 
+  <div class="page">
+ 
+    <header class="site-header">
+      <div class="brand">
+        <span class="brand-icon">⛨</span>
+        <span class="brand-name">SecureShare</span>
+      </div>
+      <p class="brand-sub">Partage de fichiers signé &amp; temporaire</p>
+    </header>
+ 
+    <main class="main">
+      <div class="card">
+ 
+        <div class="card-header">
+          <span class="step-badge">01</span>
+          <h1 class="card-title">Envoyer un fichier</h1>
+          <p class="card-desc">Formats acceptés : <code>txt, pdf, png, jpg</code> — max 5 MB</p>
+        </div>
+ 
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert alert--{{ category }}">
+                <span class="alert-icon">{% if category == 'error' %}✗{% else %}✓{% endif %}</span>
+                {{ message }}
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+ 
+        <form class="upload-form" action="/upload" method="POST" enctype="multipart/form-data" id="uploadForm">
+ 
+          <div class="drop-zone" id="dropZone">
+            <input type="file" name="file" id="fileInput" accept=".txt,.pdf,.png,.jpg,.jpeg" required/>
+            <div class="drop-inner" id="dropInner">
+              <span class="drop-icon">📂</span>
+              <span class="drop-title">Glissez votre fichier ici</span>
+              <span class="drop-sub">ou cliquez pour parcourir</span>
+            </div>
+            <div class="file-selected" id="fileSelected" style="display:none;">
+              <span class="file-sel-icon" id="fileSelIcon">📄</span>
+              <div class="file-sel-info">
+                <span class="file-sel-name" id="fileSelName"></span>
+                <span class="file-sel-size" id="fileSelSize"></span>
+              </div>
+              <button type="button" class="file-remove" id="fileRemove" title="Retirer">✕</button>
+            </div>
+          </div>
+ 
+          <button type="submit" class="btn btn-primary" id="submitBtn" disabled>
+            <span class="btn-icon">⬆</span>
+            <span class="btn-label">Envoyer le fichier</span>
+            <span class="btn-spinner" id="btnSpinner" style="display:none;"></span>
+          </button>
+ 
+        </form>
+ 
+      </div>
+    </main>
+ 
+    <footer class="site-footer">
+      HMAC-SHA256 &nbsp;·&nbsp; URLs temporaires &nbsp;·&nbsp; Stockage local sécurisé
+    </footer>
+ 
+  </div>
+ 
+  <script>
+    const fileInput    = document.getElementById('fileInput');
+    const dropZone     = document.getElementById('dropZone');
+    const dropInner    = document.getElementById('dropInner');
+    const fileSelected = document.getElementById('fileSelected');
+    const fileSelIcon  = document.getElementById('fileSelIcon');
+    const fileSelName  = document.getElementById('fileSelName');
+    const fileSelSize  = document.getElementById('fileSelSize');
+    const fileRemove   = document.getElementById('fileRemove');
+    const submitBtn    = document.getElementById('submitBtn');
+    const uploadForm   = document.getElementById('uploadForm');
+    const btnSpinner   = document.getElementById('btnSpinner');
+ 
+    const ICONS = { pdf:'📕', png:'🖼', jpg:'🖼', jpeg:'🖼', txt:'📄' };
+ 
+    function fmtSize(b) {
+      if (b < 1024) return b + ' B';
+      if (b < 1048576) return (b / 1024).toFixed(1) + ' Ko';
+      return (b / 1048576).toFixed(2) + ' Mo';
+    }
+ 
+    function applyFile(file) {
+      const ext = file.name.split('.').pop().toLowerCase();
+      fileSelIcon.textContent = ICONS[ext] || '📄';
+      fileSelName.textContent = file.name;
+      fileSelSize.textContent = fmtSize(file.size);
+      dropInner.style.display = 'none';
+      fileSelected.style.display = 'flex';
+      submitBtn.disabled = false;
+      dropZone.classList.add('has-file');
+    }
+ 
+    function clearFile() {
+      fileInput.value = '';
+      dropInner.style.display = '';
+      fileSelected.style.display = 'none';
+      submitBtn.disabled = true;
+      dropZone.classList.remove('has-file', 'drag-over');
+    }
+ 
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files[0]) applyFile(fileInput.files[0]);
+    });
+ 
+    fileRemove.addEventListener('click', (e) => { e.stopPropagation(); clearFile(); });
+ 
+    dropZone.addEventListener('dragover',  e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+    dropZone.addEventListener('drop', e => {
+      e.preventDefault();
+      dropZone.classList.remove('drag-over');
+      if (e.dataTransfer.files[0]) applyFile(e.dataTransfer.files[0]);
+    });
+ 
+    uploadForm.addEventListener('submit', () => {
+      submitBtn.disabled = true;
+      document.querySelector('.btn-label').textContent = 'Envoi en cours…';
+      btnSpinner.style.display = 'inline-block';
+    });
+  </script>
+ 
+</body>
+</html>
