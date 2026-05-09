@@ -195,18 +195,18 @@ dans `routes/upload.py` et `app.py` (fonction `build_signed_url`).
 
 Seul Flask est externe. Toutes les autres dépendances font partie de la bibliothèque standard Python.
 
----
-
-## Documentation académique
-
-Un guide détaillé et pédagogique expliquant le fonctionnement complet du projet est
-disponible dans `ACADEMIC_OVERVIEW.md`.
 
 ---
 
 ## Auteurs
 
 Projet réalisé dans le cadre d'un mini-projet académique sur la cryptographie appliquée et la sécurité web
+
+- Youssef Hamdani
+- Mariam Bahouri
+- Nermine Cheriaa
+- Amira Bhar
+- Mariem Logtari
 
 ---
 
