@@ -119,8 +119,8 @@ signature  =  HMAC(SECRET_KEY, données, SHA-256)
 
 ```bash
 # 1. Cloner le dépôt
-git clone https://github.com/username/securesharee.git
-cd securesharee
+git clone https://github.com/Jozziiff/RT4-Mini-Projet-Crypto.git
+cd RT4-Mini-Projet-Crypto
 
 # 2. (Optionnel) Créer un environnement virtuel
 python -m venv venv
@@ -128,7 +128,7 @@ source venv/bin/activate        # Linux / macOS
 venv\Scripts\activate           # Windows
 
 # 3. Installer les dépendances
-pip install flask
+pip install -r requirements.txt
 
 # 4. Lancer le serveur
 python app.py
